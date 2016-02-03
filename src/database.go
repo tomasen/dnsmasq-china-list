@@ -15,6 +15,8 @@ import (
 var serverEntry = regexp.MustCompile(`^server=\/([a-zA-z0-9\-\.]+)\/[0-9\.]+$`)
 
 var (
+	// key is domain name
+	// for value: true means domain is china, false means other include invalid domain
 	ignores    = make(map[string]bool)
 	chndomains = make(map[string]bool)
 )
