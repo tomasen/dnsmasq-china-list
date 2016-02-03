@@ -62,6 +62,7 @@ func check(domain string, tldPlusOne string) bool {
 	if err != nil {
 		log.Println("LookupNS failed", tldPlusOne, err)
 		addToIgnoreList(tldPlusOne, false)
+		addToIgnoreList(domain, false)
 		return false
 	}
 
