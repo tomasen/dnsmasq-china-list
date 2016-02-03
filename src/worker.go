@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"strings"
 
 	"golang.org/x/net/publicsuffix"
 )
@@ -13,7 +14,7 @@ import (
 var (
 	// ']: reply d.dropbox.com is '
 	logEntry = regexp.MustCompile(`\]\:\ reply\ ([a-zA-z0-9\-\.]+) is`)
-	chinaNS  = regexp.MustCompile(`(qq.com|dnspod|360safe|sina|dnsv5|taobao)`)
+	chinaNS  = regexp.MustCompile(`(qq.com|dnspod|360safe|sina|\.dnsv|baidu|lecloud|5173|tudoudns|letvlb|qingcdn|xinhuanet|youku|yodao|duowanns|sogou|kingsoft|aliyun|xunlei|alipay|ourdvs|taobao|uc\.cn|hichina|iqiyi|chinacache|ccgslb|\.cn\.|nease|aoyou365|sohu)`)
 )
 
 // ReadDNSMasqLogfile analyz dnsmasq log file
@@ -37,13 +38,15 @@ func ReadDNSMasqLogfile(f string) {
 }
 
 func checkDomain(domain string) {
+	domain = strings.ToLower(domain)
 	if isIgnored(domain) {
 		return
 	}
 
 	tldPlusOne, err := publicsuffix.EffectiveTLDPlusOne(domain)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		tldPlusOne = domain
 	}
 
 	// put it in ignores list to avoid double check
@@ -62,6 +65,7 @@ func check(domain string, tldPlusOne string) bool {
 	nss, err := net.LookupNS(tldPlusOne)
 	if err != nil {
 		log.Println("LookupNS failed", tldPlusOne, err)
+		return false
 	}
 
 	for _, v := range nss {

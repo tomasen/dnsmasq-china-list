@@ -61,7 +61,8 @@ func isIgnored(domain string) bool {
 
 	d, err := publicsuffix.EffectiveTLDPlusOne(domain)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return true
 	}
 
 	if val, ok := ignores[d]; ok {
@@ -78,10 +79,6 @@ func isIgnored(domain string) bool {
 }
 
 func addToChinaList(domain string) {
-	d, err := publicsuffix.EffectiveTLDPlusOne(domain)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	chndomains[d] = true
+	chndomains[domain] = true
 }
