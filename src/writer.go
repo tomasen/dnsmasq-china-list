@@ -7,6 +7,7 @@ import (
 
 // WriteChinaConf write dnsmasq config file
 func WriteChinaConf(conf string) {
+	log.Println("writing dnsmasq file:", conf)
 	f, err := os.Create(conf)
 	if err != nil {
 		log.Fatal(err)

@@ -21,7 +21,7 @@ var (
 
 // ReadConfDir put domain in ignore list
 func ReadConfDir(dir string) {
-	files, _ := ioutil.ReadDir("./")
+	files, _ := ioutil.ReadDir(dir)
 	for _, f := range files {
 		if !f.IsDir() {
 			if filepath.Ext(f.Name()) == ".conf" {
@@ -32,6 +32,8 @@ func ReadConfDir(dir string) {
 }
 
 func addDnsmasqConfToIgnoreList(f string) {
+	log.Println("loading dnsmasq conf:", f)
+
 	file, err := os.Open(f)
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +43,7 @@ func addDnsmasqConfToIgnoreList(f string) {
 	for scanner.Scan() {
 		b := serverEntry.FindAllStringSubmatch(scanner.Text(), -1)
 		if len(b) == 1 && len(b[0]) == 2 {
-			addToIgnoreList(b[0][1])
+			addToIgnoreList(b[0][1], true)
 		}
 	}
 
@@ -50,11 +52,41 @@ func addDnsmasqConfToIgnoreList(f string) {
 	}
 }
 
-func addToIgnoreList(domain string) {
-	ignores[domain] = true
+func addToIgnoreList(domain string, ischina bool) {
+	ignores[domain] = ischina
 }
 
 func isIgnored(domain string) bool {
+	if _, ok := ignores[domain]; ok {
+		return true
+	}
+
+	d, err := publicsuffix.EffectiveTLDPlusOne(domain)
+	if err != nil {
+		log.Println(err)
+		return true
+	}
+
+	if _, ok := ignores[d]; ok {
+		return true
+	}
+
+	for k := range ignores {
+		if strings.HasSuffix(domain, k) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func addToChinaList(domain string) {
+	log.Println("found new china-domain:", domain)
+	chndomains[domain] = true
+	addToIgnoreList(domain, true)
+}
+
+func isChina(domain string) bool {
 	if val, ok := ignores[domain]; ok {
 		return val
 	}
@@ -62,7 +94,7 @@ func isIgnored(domain string) bool {
 	d, err := publicsuffix.EffectiveTLDPlusOne(domain)
 	if err != nil {
 		log.Println(err)
-		return true
+		return false
 	}
 
 	if val, ok := ignores[d]; ok {
@@ -76,9 +108,4 @@ func isIgnored(domain string) bool {
 	}
 
 	return false
-}
-
-func addToChinaList(domain string) {
-
-	chndomains[domain] = true
 }

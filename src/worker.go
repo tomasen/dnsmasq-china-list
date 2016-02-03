@@ -14,7 +14,7 @@ import (
 var (
 	// ']: reply d.dropbox.com is '
 	logEntry = regexp.MustCompile(`\]\:\ reply\ ([a-zA-z0-9\-\.]+) is`)
-	chinaNS  = regexp.MustCompile(`(qq.com|dnspod|360safe|sina|\.dnsv|baidu|lecloud|5173|tudoudns|letvlb|qingcdn|xinhuanet|youku|yodao|duowanns|sogou|kingsoft|aliyun|xunlei|alipay|ourdvs|taobao|uc\.cn|hichina|iqiyi|chinacache|ccgslb|\.cn\.|nease|aoyou365|sohu)`)
+	chinaNS  = regexp.MustCompile(`(qq.com|dnspod|360safe|sina|\.dnsv|baidu|lecloud|5173|tudoudns|letvlb|qingcdn|xinhuanet|youku|yodao|duowanns|sogou|alidns|kingsoft|aliyun|xunlei|alipay|ourdvs|taobao|uc\.cn|hichina|iqiyi|chinacache|ccgslb|\.cn\.|nease|aoyou365|sohu)`)
 )
 
 // ReadDNSMasqLogfile analyz dnsmasq log file
@@ -49,11 +49,7 @@ func checkDomain(domain string) {
 		tldPlusOne = domain
 	}
 
-	// put it in ignores list to avoid double check
-	addToIgnoreList(tldPlusOne)
-
 	check(domain, tldPlusOne)
-
 }
 
 func check(domain string, tldPlusOne string) bool {
@@ -65,6 +61,7 @@ func check(domain string, tldPlusOne string) bool {
 	nss, err := net.LookupNS(tldPlusOne)
 	if err != nil {
 		log.Println("LookupNS failed", tldPlusOne, err)
+		addToIgnoreList(tldPlusOne, false)
 		return false
 	}
 
@@ -73,9 +70,21 @@ func check(domain string, tldPlusOne string) bool {
 			addToChinaList(tldPlusOne)
 			return true
 		}
+
+		// check if ns record is belong to china domain
+		ns := strings.TrimSuffix(strings.TrimSpace(v.Host), ".")
+		ns, err = publicsuffix.EffectiveTLDPlusOne(domain)
+		if err == nil && isChina(ns) {
+			addToChinaList(tldPlusOne)
+			return true
+		}
 	}
+
+	// put it in ignores list to avoid double check
+	addToIgnoreList(tldPlusOne, false)
+
 	if len(nss) > 0 {
-		log.Println(nss[0].Host)
+		log.Println("out-china ns server:", nss[0].Host)
 	}
 
 	return false
