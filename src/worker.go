@@ -14,7 +14,7 @@ import (
 var (
 	// ']: reply d.dropbox.com is '
 	logEntry = regexp.MustCompile(`\]\:\ reply\ ([a-zA-z0-9\-\.]+) is`)
-	chinaNS  = regexp.MustCompile(`(qq.com|dnspod|360safe|sina|baidu|lecloud|5173|tudoudns|letvlb|qingcdn|xinhuanet|youku|yodao|duowanns|sogou|alidns|kingsoft|aliyun|xunlei|alipay|ourdvs|taobao|uc\.cn|hichina|iqiyi|chinacache|ccgslb|\.cn\.|nease|aoyou365|sohu)`)
+	chinaNS  = regexp.MustCompile(`(qq\.com|dnspod|360safe|sina|\.dnsv[0-9]+\.com|dnspai|51dns|xincache|yunjiasu|xundns|baidu|lecloud|5173|tudoudns|letvlb|qingcdn|xinhuanet|youku|yodao|duowanns|sogou|alidns|kingsoft|aliyun|xunlei|alipay|ourdvs|taobao|uc\.cn|hichina|iqiyi|chinacache|ccgslb|\.cn\.|nease|aoyou365|sohu)`)
 )
 
 // ReadDNSMasqLogfile analyz dnsmasq log file
@@ -39,6 +39,11 @@ func ReadDNSMasqLogfile(f string) {
 
 func checkDomain(domain string) {
 	domain = strings.ToLower(domain)
+
+	if !strings.Contains(domain, ".") {
+		return
+	}
+
 	if isIgnored(domain) {
 		return
 	}
