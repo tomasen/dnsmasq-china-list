@@ -40,6 +40,10 @@ func ReadDNSMasqLogfile(f string) {
 func checkDomain(domain string) {
 	domain = strings.ToLower(domain)
 
+	if !strings.Contains(domain, ".") {
+		return
+	}
+
 	if !isDomainName(domain) {
 		return
 	}
