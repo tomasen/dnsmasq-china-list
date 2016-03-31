@@ -16,8 +16,7 @@ func WriteChinaConf(conf string) {
 
 	for k, v := range chndomains {
 		if v {
-			// server=/csi.gstatic.com/114.114.114.114
-			f.WriteString("server=/" + k + "/223.5.5.5\n")
+			f.WriteString("server=/" + k + "/119.29.29.29\n")
 		}
 	}
 }
