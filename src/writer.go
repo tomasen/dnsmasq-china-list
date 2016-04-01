@@ -6,7 +6,7 @@ import (
 )
 
 // WriteChinaConf write dnsmasq config file
-func WriteChinaConf(conf string) {
+func WriteChinaConf(conf, server string) {
 	log.Println("writing dnsmasq file:", conf)
 	f, err := os.Create(conf)
 	if err != nil {
@@ -16,7 +16,7 @@ func WriteChinaConf(conf string) {
 
 	for k, v := range chndomains {
 		if v {
-			f.WriteString("server=/" + k + "/119.29.29.29\n")
+			f.WriteString("server=/" + k + "/" + server + "\n")
 		}
 	}
 }
